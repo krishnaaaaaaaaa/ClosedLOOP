@@ -1,0 +1,249 @@
+<!DOCTYPE HTML>
+<!--
+  Transitive by TEMPLATED
+  templated.co @templatedco
+  Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+  <head>
+    <title>Provide Ratings - Closed Loop by KRISHNA</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+	.checked {
+	    color: orange;
+	}
+	.rating {
+	    float:left;
+	    width:300px;
+	}
+	.rating span { float:right; position:relative; }
+	.rating span input {
+	    position:absolute;
+	    top:0px;
+	    left:0px;
+	    opacity:0;
+	}
+	.rating span label {
+	    display:inline-block;
+	    width:30px;
+	    height:30px;
+	    text-align:center;
+	    color:#FFF;
+	    background:#ccc;
+	    font-size:30px;
+	    margin-right:2px;
+	    line-height:30px;
+	    border-radius:50%;
+	    -webkit-border-radius:50%;
+	}
+	.rating span:hover ~ span label,
+	.rating span:hover label,
+	.rating span.checked label,
+	.rating span.checked ~ span label {
+	    background:#F90;
+	    color:#FFF;
+	}
+	</style>
+
+
+  </head>
+  <body class="subpage">
+
+    
+
+    <!-- Header -->
+      <header id="header">
+        <div class="logo"><a href="/">Closed Loop <span>by KRISHNA</span></a></div>
+        <a href="#menu" class="toggle"><span>Menu</span></a>
+      </header>
+
+    <!-- Nav -->
+      <nav id="menu">
+        <ul class="links">
+          <li><a href="/">Home</a></li>
+          <li><a href="generic.html">Generic</a></li>
+          <li><a href="elements.html">Elements</a></li>
+          <li><a href="changepassword.ejs">Change Password</a></li>
+		  <li><a href="signout.ejs">Sign Out</a></li>
+        </ul>
+      </nav>
+
+    <!-- One -->
+      <section id="one" class="wrapper style2">
+        <div class="inner">
+          <div class="box">
+            <div class="image fit">
+              <img src="images/pic01.jpg" alt="" />
+            </div>
+            <div class="content">
+              <header class="align-center">
+                <h2>Please Provide Ratings</h2>
+                <p>maecenas feugiat ex purus, quis volutpat lacus placerat</p>
+              </header>
+              <hr />
+              <form name="ratingsform" method="post" action="#" class="align-center">
+                    <div class="row uniform">
+                      <div class="12u$">
+                          <div class="select-wrapper">
+                          <select name="states" id="states" onchange="updatestates(this.selectedIndex);" required>
+                          <option selected="Select a state">-Select a state-</option>
+                          <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                          <option value="Andhra Pradesh">Andhra Pradesh</option>
+                          <option value="Kolkata">Kolkata</option>
+                          <option value="Maharasta">Maharasta</option>
+                          <option value="Odisha">Odisha</option>
+                          </select>
+                          <select name="districts"  onclick="//alert(this.options[this.options.selectedIndex])" required>
+						              </select>
+                        </div>
+                      </div>
+                      <div class="3u$">
+                        <h1>Ratings</h1>
+                      </div>
+                      <div class="rating">
+                          <span><input type="radio" name="rating" id="str5" value="5" required><label for="str5"></label></span>
+                          <span><input type="radio" name="rating" id="str4" value="4"><label for="str4"></label></span>
+                          <span><input type="radio" name="rating" id="str3" value="3"><label for="str3"></label></span>
+                          <span><input type="radio" name="rating" id="str2" value="2"><label for="str2"></label></span>
+                          <span><input type="radio" name="rating" id="str1" value="1"><label for="str1"></label></span>
+                      </div>
+                      <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+                    <script type="text/javascript">
+                    $(document).ready(function(){
+                        // Check Radio-box
+                        $(".rating input:radio").attr("checked", false);
+
+                        $('.rating input').click(function () {
+                            $(".rating span").removeClass('checked');
+                            $(this).parent().addClass('checked');
+                        });
+
+                        $('input:radio').change(
+                          function(){
+                            var userRating = this.value;
+                            alert(userRating);
+                          }); 
+                        });
+                  </script>
+
+                      <div class="3u$">
+                        <ul class="actions">
+                          <li><input type="submit" value="Submit" /></li>
+                          <li><input type="reset" value="Reset" class="alt" /></li><br>
+                                                  
+                        </ul>
+                      </div>
+                    </div>
+
+
+                    
+
+              </form>
+
+              <script type="text/javascript">
+ 
+                    var stateslist=document.ratingsform.states;
+                    var districtslist=document.ratingsform.districts;
+                    
+                     
+                    var districts=new Array();
+                    districts[0]="";
+                    districts[1]=["Select a district","Arunchal", "pradesh"];
+                    districts[2]=["Select a district","Andhra", "pradesh"];
+                    districts[3]=["Select a district","Kolkata"];
+                    districts[4]=["Select a district","Mumbai", "Pune"];
+                    districts[5]=["Select a district","Puri", "Cuttack","Bhubaneswar","jagatsinghpur","Sambalpur"];
+
+
+                    function updatestates(selectedstategroup){
+                        
+                        districtslist.options.length=0;
+                        if (selectedstategroup>0){
+                            for (i=0; i<districts[selectedstategroup].length; i++)
+                                districtslist.options[districtslist.options.length]=new Option(districts[selectedstategroup][i]);
+                        }
+                    }
+             
+                    </script>
+
+                    
+
+
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+    <!-- Four -->
+      <section id="four" class="wrapper style3">
+        <div class="inner">
+
+          <header class="align-center">
+            <h2>Morbi interdum mollis sapien</h2>
+            <p>Cras aliquet urna ut sapien tincidunt, quis malesuada elit facilisis. Vestibulum sit amet tortor velit. Nam elementum nibh a libero pharetra elementum. Maecenas feugiat ex purus, quis volutpat lacus placerat malesuada. Praesent in sem ex. Morbi mattis sapien pretium tellus venenatis, at egestas urna ornare.</p>
+          </header>
+
+        </div>
+      </section>
+
+    <!-- Footer -->
+      <footer id="footer" class="wrapper">
+        <div class="inner">
+          <section>
+            <div class="box">
+              <div class="content">
+                <h2 class="align-center">Get in Touch</h2>
+                <hr />
+                <form action="#" method="post">
+                  <div class="field half first">
+                    <label for="name">Name</label>
+                    <input name="name" id="name" type="text" placeholder="Name">
+                  </div>
+                  <div class="field half">
+                    <label for="email">Email</label>
+                    <input name="email" id="email" type="email" placeholder="Email">
+                  </div>
+                  <div class="field">
+                    <label for="dept">Department</label>
+                    <div class="select-wrapper">
+                      <select name="dept" id="dept">
+                        <option value="">- Category -</option>
+                        <option value="1">Manufacturing</option>
+                        <option value="1">Shipping</option>
+                        <option value="1">Administration</option>
+                        <option value="1">Human Resources</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="message">Message</label>
+                    <textarea name="message" id="message" rows="6" placeholder="Message"></textarea>
+                  </div>
+                  <ul class="actions align-center">
+                    <li><input value="Send Message" class="button special" type="submit"></li>
+                  </ul>
+                </form>
+              </div>
+            </div>
+          </section>
+          <div class="copyright">
+            &copy; Untitled Design: <a href="https://templated.co/">TEMPLATED</a>. Images <a href="https://unsplash.com/">Unsplash</a> Video <a href="http://coverr.co/">Coverr</a>.
+          </div>
+        </div>
+      </footer>
+
+    <!-- Scripts -->
+      <script src="assets/js/jquery.min.js"></script>
+      <script src="assets/js/jquery.scrolly.min.js"></script>
+      <script src="assets/js/jquery.scrollex.min.js"></script>
+      <script src="assets/js/skel.min.js"></script>
+      <script src="assets/js/util.js"></script>
+      <script src="assets/js/main.js"></script>
+
+  </body>
+</html>
