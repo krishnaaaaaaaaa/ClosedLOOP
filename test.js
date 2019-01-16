@@ -15,6 +15,7 @@ var usernameexists=false;
 var loginagain=false;
 var resetusername=false;
 var old_password='';
+const port = process.env.PORT || 3000;
 /*
 login=0 unattempted login
 login=1 invalid username/password
@@ -625,5 +626,5 @@ app.post('/signup/verifymail.html', urlencodedparserhome, function(req,res){
   
 });*/
 
-app.listen(3000);
+app.listen(port);
 console.log("listening to "+"//localhost:"+3000);
