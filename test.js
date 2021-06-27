@@ -6,11 +6,28 @@ const MongoClientATLAS = require('mongodb').MongoClient;
 const assert = require('assert');
 
 var express= require('express');
+var session = require('express-session');
 var app= express();
 
+uudid = 1000
+app.set('trust proxy', 1) //trust
+const genuuid = function(req){
+  uudid = uudid + 1
+  return uudid
+};
+
+app.use(session({
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: false,
+  cookie: {maxAge: 60000},
+}));
+
+
+
 var urlencodedparserhome=bodyparser.urlencoded({extended:false});
-var user='';
-var login=0;
+//var user='';
+//var login=0;
 var usernameexists=false;
 var loginagain=false;
 var resetusername=false;
@@ -30,7 +47,7 @@ app.set('view engine','ejs');
 
 // Connection URL
 // const url = 'mongodb://localhost:27017';
- 
+
 // Database Name
 // const dbName = 'local';
 
@@ -58,15 +75,25 @@ app.use('/signup', express.static('pages'));
 
 app.get('/', function(req,res){
 	console.log('firing index ejs!');
+  if (req.session.views){
+    req.session.views++ ;
+  }
+  else {
+    req.session.views = 1
+  }
+  console.log('session views:', req.session.views);
+  console.log('session :', req.session);
+
+
 	resetusername=false;
-	var data={username:user, login:login};
+	var data={username:req.session.username, login:req.session.login};
 	res.render('index',{data});
 
 });
 
 app.get('/districtrating.ejs',function(req,res){
 
-	if(user!='')
+	if(req.session.username!='')
 	{
 		var data={notfound:false,foundrating:false};
 		res.render('districtrating',{data});
@@ -80,18 +107,18 @@ app.get('/districtrating.ejs',function(req,res){
 
 app.get('/changepassword.ejs', function(req,res){
 	console.log('firing changepassword ejs!');
-	if(user!='')
+	if(req.session.username!='')
 	{
 		//MongoClient.connect(err => {
 		  	//assert.equal(null, err);
-	 
+
 			const db = MongoClient.db(dbName);
 
 			const findDocuments = function(db, callback) {
 			 	// Get the documents collection
 			  	const collection = db.collection('closedLoop');
 			 	// Find some documents
-			 	collection.find({'username':user}).toArray(function(err, docs) {
+			 	collection.find({'username':req.session.username}).toArray(function(err, docs) {
 			    ////assert.equal(err, null);
 			    console.log("Found the following records");
 			    console.log(docs);
@@ -103,8 +130,8 @@ app.get('/changepassword.ejs', function(req,res){
 
 			findDocuments(db, function() {
 		    //MongoClient.close();
-		  	});	
-	 
+		  	});
+
 	  ////MongoClient.close();
 		// });
 
@@ -119,15 +146,15 @@ app.get('/changepassword.ejs', function(req,res){
 
 app.get('/signout.ejs', function(req,res){
 	console.log('signing out!');
-	user='';
-	login=0;
+	req.session.username='';
+	req.session.login=0;
 	old_password='';
 	res.redirect('/');
 
 });
 
 app.get('/provideratings.ejs',function(req,res){
-	if(user==='')
+	if(req.session.username==='')
 	{
 		res.redirect('/signout.ejs');
 	}
@@ -145,11 +172,11 @@ app.get('/provideratings.ejs',function(req,res){
 
 app.get('/signin.ejs', function(req,res){
 	console.log('firing signin ejs!');
-	var data={login:login, loginagain:loginagain};
+	var data={login:req.session.login, loginagain:loginagain};
 	if(loginagain=true)
 		loginagain=false;
-	if(login==1)
-		login=0;
+	if(req.session.login==1)
+		req.session.login=0;
 	res.render('signin',{data});
 
 });
@@ -168,18 +195,18 @@ app.get('/resetpassword.ejs', function(req,res){
 		//MongoClient.connect(err => {
 	  	//assert.equal(null, err);
 	 	console.log("in the get function of resetpassword:"+resetusername);
- 
+
 		const db = MongoClient.db(dbName);
 
 		const findDocuments = function(db, callback) {
 		 	// Get the documents collection
 		  	const collection = db.collection('closedLoop');
 		 	// Find some documents
-		 	collection.find({'username':user}).toArray(function(err, docs) {
+		 	collection.find({'username':req.session.username}).toArray(function(err, docs) {
 		    ////assert.equal(err, null);
 		    console.log("Found the following records");
 		    console.log(docs);
-		   
+
 		   	if(docs != null && docs.length > 0){
 		   		console.log('inside the found something condition');
 		   		var data={resetusername:resetusername,security_question:docs[0].security_question};
@@ -190,7 +217,7 @@ app.get('/resetpassword.ejs', function(req,res){
 		    	console.log('inside the not found anything condition');
 		    	console.log('username incorrect');
 				resetusername=false;
-				user='';
+				req.session.username='';
 				res.redirect('/resetpassword.ejs');
 		    }
 
@@ -200,35 +227,35 @@ app.get('/resetpassword.ejs', function(req,res){
 
 		findDocuments(db, function() {
 	    //MongoClient.close();
-	  	});	
- 
+	  	});
+
   ////MongoClient.close();
 	// });
 
-		//resetusername=false;	
+		//resetusername=false;
 	}
 	else
 	{
 		var data={resetusername:resetusername};
 		res.render('resetpassword',{data});
 	}
-	
+
 
 });
 
 
 app.post('/districtrating.ejs',urlencodedparserhome,function(req,res){
 
-	if(user==='')
+	if(req.session.username==='')
 	{
 		res.redirect('/');
 	}
 	//MongoClient.connect(err => {
 	  	//assert.equal(null, err);
 	 	console.log("seaching previous rating on the same district");
- 
+
 		const db = MongoClient.db(dbName);
-		
+
 
 		const findDocuments = function(db, callback) {
 		 	// Get the documents collection
@@ -246,7 +273,7 @@ app.post('/districtrating.ejs',urlencodedparserhome,function(req,res){
 		   		{
 		   			reviews+=docs[i].review;
 		   			reviews+="<br>";
-		   			rating+=parseInt(docs[i].rating);                                 
+		   			rating+=parseInt(docs[i].rating);
 		   		}
 		   		console.log(rating+' and i ='+i);
 		   		rating/=i;
@@ -255,26 +282,26 @@ app.post('/districtrating.ejs',urlencodedparserhome,function(req,res){
 		   		console.log(string);
 		   		res.render('districtrating',{data});
 		   	}
-		   	else if(user!='')
+		   	else if(req.session.username!='')
 		   	{
 				data={notfound:true,foundrating:false};
-		   		res.render('districtrating',{data});	
-					   		
+		   		res.render('districtrating',{data});
+
 		   	}
 
 			callback(docs);
 			});
-			
+
 
 		};
 		findDocuments(db, function() {
 	    //MongoClient.close();
 	  	});
 
-	  	
-	// });  		
- 		   	
-	
+
+	// });
+
+
 });
 
 
@@ -282,22 +309,22 @@ app.post('/districtrating.ejs',urlencodedparserhome,function(req,res){
 
 app.post('/provideratings.ejs',urlencodedparserhome,function(req,res){
 
-	if(user==='')
+	if(req.session.username==='')
 	{
 		res.redirect('/');
 	}
 	//MongoClient.connect(err => {
 	  	//assert.equal(null, err);
 	 	console.log("seaching previous rating on the same district");
- 
+
 		const db = MongoClient.db(dbName);
-		
+
 
 		const findDocuments = function(db, callback) {
 		 	// Get the documents collection
 		  	const collection = db.collection('closedLoopData');
 		 	// Find some documents
-		 	collection.find({'username':user,'state':req.body.states,'district':req.body.districts}).toArray(function(err, docs) {
+		 	collection.find({'username':req.session.username,'state':req.body.states,'district':req.body.districts}).toArray(function(err, docs) {
 		    ////assert.equal(err, null);
 		    console.log("Found the following records");
 		    console.log(docs);
@@ -306,13 +333,13 @@ app.post('/provideratings.ejs',urlencodedparserhome,function(req,res){
 		   		data={found:true};
 		   		res.render('provideratings',{data});
 		   	}
-		   	else if(user!='')
+		   	else if(req.session.username!='')
 		   	{
 				const insertDocuments = function(db, callback) {
 						  	// Get the documents collection
 		 					const collection = db.collection('closedLoopData');
 						  	// Insert some documents
-		 					collection.insertMany([{username:user,state:req.body.states,district:req.body.districts,rating:req.body.rating,review:req.body.review}], function(err, result) {
+		 					collection.insertMany([{username:req.session.username,state:req.body.states,district:req.body.districts,rating:req.body.rating,review:req.body.review}], function(err, result) {
 		    				////assert.equal(err, null);
 		    				assert.equal(1, result.result.n);
 		    				assert.equal(1, result.ops.length);
@@ -324,22 +351,22 @@ app.post('/provideratings.ejs',urlencodedparserhome,function(req,res){
 						insertDocuments(db, function() {
 		    			//MongoClient.close();
 						});
-						res.redirect('/');		   		
+						res.redirect('/');
 		   	}
 
 			callback(docs);
 			});
-			
+
 
 		};
 		findDocuments(db, function() {
 	    //MongoClient.close();
 	  	});
 
-	  	
-	// });  		
- 		   	
-	
+
+	// });
+
+
 });
 
 app.post('/resetpassword.ejs', urlencodedparserhome, function(req,res){
@@ -348,19 +375,19 @@ app.post('/resetpassword.ejs', urlencodedparserhome, function(req,res){
 		//MongoClient.connect(err => {
 	  	//assert.equal(null, err);
 	 	console.log("seaching your user");
- 
+
 		const db = MongoClient.db(dbName);
 
 		const findDocuments = function(db, callback) {
 		 	// Get the documents collection
 		  	const collection = db.collection('closedLoop');
 		 	// Find some documents
-		 	collection.find({'username':user}).toArray(function(err, docs) {
+		 	collection.find({'username':req.session.username}).toArray(function(err, docs) {
 		    ////assert.equal(err, null);
 		    console.log("Found the following records");
 		    console.log(docs);
-		   	
-		   	
+
+
 			if(docs[0].security_answer===req.body.security_answer){
 			   	console.log('matched');
 			   	//old_password=docs[0].password;
@@ -371,7 +398,7 @@ app.post('/resetpassword.ejs', urlencodedparserhome, function(req,res){
 			    console.log('not matched');
 				res.redirect('/resetpassword.ejs');
 			}
-			
+
 
 		    callback(docs);
 			});
@@ -379,15 +406,15 @@ app.post('/resetpassword.ejs', urlencodedparserhome, function(req,res){
 
 		findDocuments(db, function() {
 	    //MongoClient.close();
-	  	});	
- 
+	  	});
+
   ////MongoClient.close();
 	// });
 
 	}
 	else
 	{
-		user=req.body.username;
+		req.session.username=req.body.username;
 		resetusername=true;
 		res.redirect('/resetpassword.ejs');
 	}
@@ -403,62 +430,62 @@ app.get('/resetpasswordlaststage.ejs', function(req,res){
 });
 
 app.post('/resetpasswordlaststage.ejs', urlencodedparserhome, function(req,res){
-	
+
 	console.log("inside the resetpasswordlaststage post method");
 	//MongoClient.connect(err => {
 	    //assert.equal(null, err);
 	    console.log("Connected successfully to server");
-	 
-	    const db = MongoClient.db(dbName);
-	    
 
-	    	
-		
+	    const db = MongoClient.db(dbName);
+
+
+
+
 		console.log('user input new password is '+req.body.password);
 
-		
-		
+
+
 			const updateDocument = function(db, callback) {
 		  		// Get the documents collection
 		  		const collection = db.collection('closedLoop');
 		  		// Update the password where username matches
 
-		  		collection.updateOne({ username : user }
+		  		collection.updateOne({ username : req.session.username }
 		    	, { $set: { password : req.body.password } }, function(err, result) {
-		    	console.log("Updated the password of"+user);
+		    	console.log("Updated the password of"+req.session.username);
 		    	resetusername=false;
-		    	user='';
+		    	req.session.username='';
 		    	res.redirect('/signin.ejs');
 		    	callback(result);
-		  		});  
+		  		});
 			};
 
 
-		  		
+
 		   		updateDocument(db, function() {
 		    	//MongoClient.close();
 		  		});
-	   	
+
   	// });
 
 
 });
 
 app.post('/changepassword.ejs', urlencodedparserhome, function(req,res){
-	
+
 	console.log("inside the changepassword post method");
 	//MongoClient.connect(err => {
 	    //assert.equal(null, err);
 	    console.log("Connected successfully to server");
-	 
-	    const db = MongoClient.db(dbName);
-	    
 
-	    	
+	    const db = MongoClient.db(dbName);
+
+
+
 		console.log('old password is '+old_password);
 		console.log('user input old password is '+req.body.old_password);
 
-		
+
 		if(old_password==req.body.old_password)
 	  	{
 			const updateDocument = function(db, callback) {
@@ -466,21 +493,22 @@ app.post('/changepassword.ejs', urlencodedparserhome, function(req,res){
 		  		const collection = db.collection('closedLoop');
 		  		// Update the password where username matches
 
-		  		collection.updateOne({ username : user }
+		  		collection.updateOne({ username : req.session.username }
 		    	, { $set: { password : req.body.password } }, function(err, result) {
-		    	console.log("Updated the password of"+user);
+		    	console.log("Updated the password of"+req.session.username);
 		    	resetusername=false;
-		    	user='';
+          console.log("moving null to username");
+		    	req.session.username='';
 		    	old_password='';
-		    	login=0;
+		    	req.session.login=0;
 
 		    	res.redirect('/signin.ejs');
 		    	callback(result);
-		  		});  
+		  		});
 			};
 
 
-		  		
+
 		   		updateDocument(db, function() {
 		    	//MongoClient.close();
 		  		});
@@ -507,7 +535,7 @@ app.post('/signup.ejs', urlencodedparserhome, function(req,res){
 	//MongoClient.connect(err => {
 	  	//assert.equal(null, err);
 	 	console.log("Connected successfully to server");
- 
+
 		const db = MongoClient.db(dbName);
 
 		const findDocuments = function(db, callback) {
@@ -518,13 +546,13 @@ app.post('/signup.ejs', urlencodedparserhome, function(req,res){
 		    ////assert.equal(err, null);
 		    console.log("Found the following records");
 		    console.log(docs);
-		   
+
 		   	if(docs != null && docs.length > 0){
 		   		usernameexists=true;
 		    	res.redirect('/signup.ejs');
 		    }
 		    	else{
-		    		
+
 		    			const insertDocuments = function(db, callback) {
 						  	// Get the documents collection
 		 					const collection = db.collection('closedLoop');
@@ -553,8 +581,8 @@ app.post('/signup.ejs', urlencodedparserhome, function(req,res){
 
 		findDocuments(db, function() {
 	    //MongoClient.close();
-	  	});	
- 
+	  	});
+
   ////MongoClient.close();
 	// });
 
@@ -568,8 +596,12 @@ app.post('/signin.ejs', urlencodedparserhome, function(req,res){
 	// Use connect method to connect to the server
 	//MongoClient.connect(err => {
 	  	//assert.equal(null, err);
+
+
+
+
 	 	console.log("Connected successfully to server");
-	 
+
 		const db = MongoClient.db(dbName);
 
 		const findDocuments = function(db, callback) {
@@ -579,24 +611,24 @@ app.post('/signin.ejs', urlencodedparserhome, function(req,res){
 		 	collection.find({'username': req.body.username}).toArray(function(err, docs) {
 			    ////assert.equal(err, null);
 			    console.log("Found the following records");
-			   
+			    console.log(docs);
 			   	if(docs != null && docs.length > 0){
 			    	if(req.body.password===docs[0].password){
 			    		console.log('login successful !');
 			    		console.log('Your email is '+docs[0].email);
-			    		user=docs[0].username;
-			    		login=2;
+			    		req.session.username=docs[0].username;
+			    		req.session.login=2;
 			    		res.redirect('/');
 			    	}
 			    	else{
 			    		console.log('invalid username/password');
-			    		login=1;
+			    		req.session.login=1;
 			    		res.redirect('/signin.ejs');
 			    	}
 				}
 				else{
 					console.log('invalid username/password');
-					login=1;
+					req.session.login=1;
 			    	res.redirect('/signin.ejs');
 				}
 			    callback(docs);
@@ -606,13 +638,13 @@ app.post('/signin.ejs', urlencodedparserhome, function(req,res){
 		findDocuments(db, function() {
 	    //MongoClient.close();
 	  	});
-	 
-	  ////MongoClient.close();
+
+	  //MongoClient.close();
 	// });
 
-	
 
-	
+
+
 });
 
 app.post('/signup/verifymail.html', urlencodedparserhome, function(req,res){
@@ -623,8 +655,9 @@ app.post('/signup/verifymail.html', urlencodedparserhome, function(req,res){
 /*app.get('/signup',function(req,res){
   console.log('request made to'+req.url);
   res.sendFile('./pages/signup.html');
-  
+
 });*/
+
 
 app.listen(port);
 console.log("listening to "+"//localhost:"+3000);
